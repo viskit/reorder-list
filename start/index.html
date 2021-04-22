@@ -24,19 +24,25 @@
         box-shadow: 5px 5px 5px #eee;
       }
     </style>
-    <title>start test</title>
+    <title>viskit-reorder-list demo</title>
   </head>
 
   <body>
     <viskit-reorder-list draggableClass="draggable">
       <viskit-reorder>
-        <div>item 1</div>
-        <div>item 2</div>
-        <div>item 3</div>
-        <div>item 4</div>
+        <div>item a</div>
+        <div>item b</div>
+        <div>item c</div>
+        <div>item d</div>
       </viskit-reorder>
     </viskit-reorder-list>
     <script src="index.build.js"></script>
-    <script></script>
+    <script>
+      document
+        .querySelector("viskit-reorder")
+        .addEventListener("onDrop", ({ detail: { complete } }) => {
+          complete(true);
+        });
+    </script>
   </body>
 </html>

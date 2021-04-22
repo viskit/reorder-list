@@ -43,30 +43,52 @@ export class ReorderList extends LitElement {
   private oldDraggableTransform: string = "";
   private dragContainer: HTMLElement = null;
 
+  private oldTransformMap: Map<HTMLElement, string> = new Map();
+
   reorderMove({
     detail: { el, container, reorder, hoverContainer, hoverEl, hoverIndex },
   }: onDragEvent) {
-    if (container === hoverContainer) {
-      const { itemDataMap } = reorder.dataCacheMap.get(container);
-      const {
-        rect: { height },
-        index: elIndex,
-      } = itemDataMap.get(el);
+    if (hoverEl) {
+      if (container === hoverContainer) {
+        const { itemDataMap } = reorder.dataCacheMap.get(container);
+        const {
+          rect: { height },
+          index: elIndex,
+        } = itemDataMap.get(el);
 
-      const { index: hoverElIndex } = itemDataMap.get(hoverEl);
-
-      const items = Array.from(container.children);
-      for (let i = 0, len = items.length; i < len; i++) {
-        const item = items[i] as HTMLElement;
-        const style = item.style;
-        let value = "";
-        if (i > elIndex && i <= hoverElIndex) {
-          value = `translateY(${-height}px)`;
-        } else if (i < elIndex && i >= hoverElIndex) {
-          value = `translateY(${height}px)`;
+        if (hoverEl) {
         }
+        const { index: hoverElIndex } = itemDataMap.get(hoverEl);
 
-        style["transform"] = value;
+        const items = Array.from(container.children);
+
+        for (let i = 0, len = items.length; i < len; i++) {
+          const item = items[i] as HTMLElement;
+          let oldTransform = "";
+          if (this.oldTransformMap.has(item)) {
+            oldTransform = this.oldTransformMap.get(item);
+          } else {
+            oldTransform = item.style.transform;
+            this.oldTransformMap.set(item, oldTransform);
+          }
+
+          if (item === el) continue;
+          const style = item.style;
+          let transform = Rematrix.fromString(oldTransform);
+          if (i > elIndex && i <= hoverElIndex) {
+            style.transform = Rematrix.toString(
+              [transform, Rematrix.translateY(-height)].reduce(
+                Rematrix.multiply
+              )
+            );
+          } else if (i < elIndex && i >= hoverElIndex) {
+            style.transform = Rematrix.toString(
+              [transform, Rematrix.translateY(height)].reduce(Rematrix.multiply)
+            );
+          } else {
+            style.transform = oldTransform;
+          }
+        }
       }
     }
   }
@@ -90,6 +112,7 @@ export class ReorderList extends LitElement {
       el.classList.add(this.draggableClass);
     }
     this.oldDraggableTransform = el.style.transform;
+    this.oldTransformMap = new Map();
   }
 
   onDrag(event: onDragEvent) {
@@ -116,11 +139,14 @@ export class ReorderList extends LitElement {
     }
   }
 
-  onDrop({ detail: { el } }: onDropEvent) {
+  onDrop({ detail: { el, complete } }: onDropEvent) {
     if (this.draggableClass) {
       el.classList.remove(this.draggableClass);
     }
     el.style.transform = this.oldDraggableTransform;
+    for (let [itemEl, transform] of this.oldTransformMap) {
+      itemEl.style.transform = transform;
+    }
   }
 
   async updated(map: Map<string, any>) {
