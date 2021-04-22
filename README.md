@@ -2,7 +2,7 @@
 
 reorder list web component
 
-![](https://raw.githubusercontent.com/viskit/viskit-reorder/main/show.gif)
+![](https://raw.githubusercontent.com/viskit/viskit-reorder-list/main/show.gif)
 
 # Install
 
