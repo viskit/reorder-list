@@ -2,6 +2,8 @@
 
 reorder list web component
 
+see https://github.com/viskit/viskit-reorder
+
 ![](https://raw.githubusercontent.com/viskit/viskit-reorder-list/main/show.gif)
 
 # Install
