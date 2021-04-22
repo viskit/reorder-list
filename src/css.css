@@ -1,0 +1,3 @@
+.container > *{
+    transition: transform .5s;
+}
