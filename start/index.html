@@ -28,21 +28,7 @@
   </head>
 
   <body>
-    <viskit-reorder-list draggableClass="draggable">
-      <viskit-reorder>
-        <div>item a</div>
-        <div>item b</div>
-        <div>item c</div>
-        <div>item d</div>
-      </viskit-reorder>
-    </viskit-reorder-list>
+    <zl-demo></zl-demo>
     <script src="index.build.js"></script>
-    <script>
-      document
-        .querySelector("viskit-reorder")
-        .addEventListener("onDrop", ({ detail: { complete } }) => {
-          complete(true);
-        });
-    </script>
   </body>
 </html>

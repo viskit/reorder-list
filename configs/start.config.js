@@ -5,7 +5,7 @@ const webpack = require("webpack");
 const Dotenv = require("dotenv-webpack");
 
 module.exports = merge(common, {
-  entry: path.resolve(__dirname, "..", "start/index.js"),
+  entry: path.resolve(__dirname, "..", "start/index.ts"),
   output: {
     filename: "index.build.js",
     path: path.resolve(__dirname, "..", "start"),

@@ -16,5 +16,6 @@
     "rootDir": "./src",
     "strictNullChecks": false,
     "declaration": true
-  }
+  },
+  "exclude": ["dist","start"]
 }
