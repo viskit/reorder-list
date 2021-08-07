@@ -1,6 +1,6 @@
 {
-  "name": "@viskit/viskit-reorder-list",
-  "version": "0.0.2",
+  "name": "@viskit/reorder-list",
+  "version": "0.0.3",
   "description": "reorder web component",
   "main": "dist/viskit-reorder.js",
   "scripts": {
@@ -27,7 +27,6 @@
     "tslib": "^2.2.0"
   },
   "devDependencies": {
-    "@viskit/content": "github:viskit/content",
     "clean-webpack-plugin": "^4.0.0-alpha.0",
     "copy-webpack-plugin": "^8.1.1",
     "css-loader": "^5.2.2",

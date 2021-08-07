@@ -17,5 +17,5 @@
     "strictNullChecks": false,
     "declaration": true
   },
-  "exclude": ["dist","start"]
+  "exclude": ["dist","start","packages"]
 }
