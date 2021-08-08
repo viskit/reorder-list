@@ -7,8 +7,7 @@ import {
 } from "@viskit/viskit-reorder";
 import { html, LitElement, css, query, property } from "lit-element";
 import * as Rematrix from "rematrix";
-import { createStyleTag } from "@viskit/create-style";
-const wrap = "wrap-" + Date.now();
+// import classes from "./css.css";
 
 export class ReorderList extends LitElement {
   @query("viskit-reorder")
@@ -16,19 +15,6 @@ export class ReorderList extends LitElement {
 
   createRenderRoot() {
     return this;
-  }
-
-  static get styles() {
-    createStyleTag(
-      ` .container > * {
-    transition: transform 0.5s;
-  }
-  .container > .draggable {
-    transition: unset;
-  } `,
-      wrap
-    );
-    return css``;
   }
 
   constructor() {
@@ -94,7 +80,6 @@ export class ReorderList extends LitElement {
   }
 
   firstUpdated() {
-    this.classList.add(wrap);
     this.reorder.addEventListener("onStart", this.onStart);
     this.reorder.addEventListener("onDrag", this.onDrag);
     this.reorder.addEventListener("onDrop", this.onDrop);

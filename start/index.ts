@@ -1,4 +1,4 @@
-import "../src/viskit-reorder-list";
+import "../src";
 import "@viskit/content";
 import { html, LitElement } from "lit-element";
 
@@ -7,7 +7,7 @@ export class Demo extends LitElement {
     return html`
       <viskit-content>
         <viskit-reorder-list draggableClass="draggable">
-          <viskit-reorder>
+          <viskit-reorder @onDrag=${()=>console.log('drag')}>
             <div>item a</div>
             <div>item b</div>
             <div>item c</div>

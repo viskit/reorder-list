@@ -1,3 +1,8 @@
-.container > *{
-    transition: transform .5s;
+
+.container > * {
+  transition: transform 0.5s;
+}
+
+.container > .draggable {
+  transition: unset;
 }
