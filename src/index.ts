@@ -1,156 +1,216 @@
-import "@viskit/viskit-reorder";
+import "@viskit/reorder";
 import {
   Reorder,
-  onDragEvent,
-  onDropEvent,
-  onStartEvent,
-} from "@viskit/viskit-reorder";
-import { html, LitElement, css, query, property } from "lit-element";
+  StartEvent,
+  DropEvent,
+  ReorderEvent,
+  DragEvent,
+} from "@viskit/reorder";
+import { LitElement, html, css } from "lit";
+import { query, property,state } from "lit/decorators.js";
 import * as Rematrix from "rematrix";
-// import classes from "./css.css";
+import clone from "clone-element";
+
+const clear = (children: HTMLCollection,deep = false) => {
+  const childrens = Array.from(children) as HTMLElement[];
+  childrens.forEach((c) => {
+    c.style.transform = "";
+    deep && (c.style.transition = "");
+  });
+};
 
 export class ReorderList extends LitElement {
+  static styles = css`
+    :host {
+      display: block;
+    }
+  `;
+
+  render() {
+    return html`
+      <viskit-reorder
+        @viskit-start=${this.onStart}
+        @viskit-drag=${this.onDrag}
+        @viskit-reorder=${this.onReorder}
+        @viskit-drop=${this.onDrop}
+        .containers=${this.containers}
+      >
+        <slot></slot>
+      </viskit-reorder>
+    `;
+  }
+
   @query("viskit-reorder")
   reorder: Reorder;
 
-  createRenderRoot() {
-    return this;
+  @property()
+  containerSelector = ""
+
+  @state()
+  containers: HTMLElement[] = [this];
+
+  updated(map: Map<string,any>){
+    if(map.has("containerSelector") && this.containerSelector){
+      this.containers = Array.from(this.querySelectorAll(this.containerSelector)) as HTMLElement[]
+    }
+
+    if(map.has("containers") ){
+      this.containers.forEach(c=>this.addStyle(c));
+    }
   }
 
-  constructor() {
-    super();
-    this.onStart = this.onStart.bind(this);
-    this.onDrag = this.onDrag.bind(this);
-    this.onDrop = this.onDrop.bind(this);
+  addStyle(container: HTMLElement){
+    (Array.from(container.children) as HTMLElement[]).forEach(el=>{
+      el.style.transition = "transform .2s";
+    })
   }
 
-  private hoverIndex: number;
+  onStart({ draggable, data, container, deltaX }: StartEvent) {
+    console.log("cannnn")
+    // clone
+    const dragEl = draggable.cloneNode(true) as HTMLElement;
+    const { left, top, width, height } = draggable.getBoundingClientRect();
+    dragEl.style.position = "absolute";
+    dragEl.style.top = top + "px";
+    dragEl.style.left = left + "px";
+    dragEl.style.pointerEvents = "none";
+    dragEl.style.margin = "0";
+    dragEl.style.width = width + "px";
+    dragEl.style.height = height + "px";
+    dragEl.style.transition = "";
+    dragEl.classList.add("draggable");
 
-  private oldDraggableTransform: string = "";
-  private dragContainer: HTMLElement = null;
+    // dragEl.style.transform = `translateY(${}px)`;
+    data.dragEl = dragEl;
 
-  private oldTransformMap: Map<HTMLElement, string> = new Map();
+    document.body.appendChild(dragEl);
 
-  reorderMove({
-    detail: { el, container, reorder, hoverContainer, hoverEl, hoverIndex },
-  }: onDragEvent) {
-    if (hoverEl) {
-      if (container === hoverContainer) {
-        const { itemDataMap } = reorder.dataCacheMap.get(container);
-        const {
-          rect: { height },
-          index: elIndex,
-        } = itemDataMap.get(el);
+    draggable.style.opacity = "0";
+  }
 
-        if (hoverEl) {
+  onDrag({ data, deltaY ,container}: DragEvent) {
+
+    data.dragEl.style.transform = `translateY(${deltaY}px)`;
+  }
+
+  onReorder({
+    data,
+    y,
+    container,
+    hoverIndex,
+    hoverable,
+    hoverContainer,
+    draggable,
+    draggableIndex,
+    draggableRect,
+    hoverableRect,
+  }: ReorderEvent) {
+    const prevHoverContainer = data.hoverContainer as HTMLElement;
+
+    // clear prev
+
+    let index = hoverIndex;
+
+    // clear previous cntainer's children transform
+    if (prevHoverContainer !== hoverContainer && prevHoverContainer) {
+      clear(prevHoverContainer.children);
+    }
+
+    if (container === hoverContainer) {
+      if (hoverIndex === draggableIndex) {
+        clear(hoverContainer.children);
+      } else if (hoverIndex < draggableIndex) {
+        if (y > hoverableRect.top + hoverableRect.height / 2) {
+          ++index;
+          data.after = true;
+        } else {
+          data.after = false;
         }
-        const { index: hoverElIndex } = itemDataMap.get(hoverEl);
-
-        const items = Array.from(container.children);
-
-        for (let i = 0, len = items.length; i < len; i++) {
-          const item = items[i] as HTMLElement;
-          let oldTransform = "";
-          if (this.oldTransformMap.has(item)) {
-            oldTransform = this.oldTransformMap.get(item);
-          } else {
-            oldTransform = item.style.transform;
-            this.oldTransformMap.set(item, oldTransform);
+        if (index === draggableIndex) {
+          clear(hoverContainer.children);
+        } else {
+          const children = Array.from(hoverContainer.children) as HTMLElement[];
+          this.addStyle(hoverContainer);
+          for (let i = 0, len = children.length; i < len; i++) {
+            let y = 0;
+            if (i >= index && i < draggableIndex) {
+              y = draggableRect.height;
+            }
+            children[i].style.transform = `translateY(${y}px)`;
           }
+        }
+      } else {
+        if (y < hoverableRect.top + hoverableRect.height / 2) {
+          --index;
+          data.after = false;
+        } else {
+          data.after = true;
+        }
 
-          if (item === el) continue;
-          const style = item.style;
-          let transform = Rematrix.fromString(oldTransform);
-          if (i > elIndex && i <= hoverElIndex) {
-            style.transform = Rematrix.toString(
-              [transform, Rematrix.translateY(-height)].reduce(
-                Rematrix.multiply
-              )
-            );
-          } else if (i < elIndex && i >= hoverElIndex) {
-            style.transform = Rematrix.toString(
-              [transform, Rematrix.translateY(height)].reduce(Rematrix.multiply)
-            );
-          } else {
-            style.transform = oldTransform;
+        if (index === draggableIndex) {
+          clear(hoverContainer.children);
+        } else {
+          const children = Array.from(hoverContainer.children) as HTMLElement[];
+          this.addStyle(hoverContainer);
+          for (let i = 0, len = children.length; i < len; i++) {
+            let y = 0;
+            if (i > draggableIndex && i <= index) {
+              y = -draggableRect.height;
+            }
+
+            children[i].style.transform = `translateY(${y}px)`;
           }
         }
       }
-    }
-  }
+    } else {
+      const fromTop = draggableRect.top < hoverableRect.top;
 
-  firstUpdated() {
-    this.reorder.addEventListener("onStart", this.onStart);
-    this.reorder.addEventListener("onDrag", this.onDrag);
-    this.reorder.addEventListener("onDrop", this.onDrop);
-  }
+      if (y > hoverableRect.top + hoverableRect.height / 2) {
+        ++index;
+        data.after = true;
+      } else {
+        data.after = false;
+      }
+      const children = Array.from(hoverContainer.children) as HTMLElement[];
+      for (let i = 0, len = children.length; i < len; i++) {
+        let y = 0;
 
-  disconnectedCallback() {
-    this.reorder.removeEventListener("onStart", this.onStart);
-    this.reorder.removeEventListener("onDrag", this.onDrag);
-    this.reorder.removeEventListener("onDrop", this.onDrop);
-  }
+        if (index === children.length) {
+          y = -draggableRect.height;
+        } else {
+          if (i >= index) {
+            y = draggableRect.height;
+          }
+        }
 
-  onStart({ detail: { container, el, gestureDetail, reorder } }: onStartEvent) {
-    this.dragContainer = container;
-    if (this.draggableClass) {
-      el.classList.add(this.draggableClass);
-    }
-    this.oldDraggableTransform = el.style.transform;
-    this.oldTransformMap = new Map();
-  }
+        this.addStyle(hoverContainer);
 
-  onDrag(event: onDragEvent) {
-    const {
-      detail: {
-        el,
-        container,
-        hoverContainer,
-        hoverEl,
-        hoverIndex,
-        reorder,
-        gestureDetail: { deltaY },
-      },
-    } = event;
-    // drag el
-    let transform = Rematrix.fromString(this.oldDraggableTransform);
-    el.classList.add("draggable");
-    el.style.transform = Rematrix.toString(
-      [transform, Rematrix.translateY(deltaY)].reduce(Rematrix.multiply)
-    );
-    if (this.hoverIndex !== hoverIndex) {
-      this.hoverIndex = hoverIndex;
-      this.reorderMove(event);
-    }
-  }
-
-  onDrop({ detail: { el, complete } }: onDropEvent) {
-    if (this.draggableClass) {
-      el.classList.remove(this.draggableClass);
-    }
-    el.style.transform = this.oldDraggableTransform;
-    for (let [itemEl, transform] of this.oldTransformMap) {
-      itemEl.style.transform = transform;
-    }
-  }
-
-  async updated(map: Map<string, any>) {
-    if (map.has("containerSelector")) {
-      this.reorder.containerSelectors = this.containerSelector
-        ? [this.containerSelector]
-        : null;
-      await this.reorder.updateComplete;
-      for (let container of this.reorder.containers) {
-        container.classList.add("container");
+        if (
+          (fromTop && hoverIndex === 0 && !data.after) ||
+          (!fromTop &&
+            hoverIndex === hoverContainer.children.length - 1 &&
+            data.after)
+        ) {
+          y = y / 2;
+        }
+        children[i].style.transform = `translateY(${y}px)`;
       }
     }
+
+    data.hoverContainer = hoverContainer;
+    data.dropIndex = index;
   }
 
-  @property({ type: String })
-  containerSelector: string = "";
+  onDrop({ data, complete }: DropEvent) {
+    data.dragEl.remove();
+    data.draggable.style.opacity = "1";
+    data.hoverContainer && clear(data.hoverContainer.children);
+    data.container && clear(data.container.children,true);
 
-  @property({ type: String })
-  draggableClass: string = "";
+    if (data.draggable !== data.hoverable) {
+      complete(data.after);
+    }
+  }
 }
 
 window.customElements.define("viskit-reorder-list", ReorderList);
