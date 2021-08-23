@@ -23,7 +23,8 @@
     "@viskit/webpack-configs": "^0.0.1"
   },
   "dependencies": {
-    "@viskit/reorder": "^0.1.8",
+    "@viskit/long-press": "^0.0.5",
+    "@viskit/reorder": "^0.2.4",
     "clone-element": "^0.1.0",
     "rematrix": "^0.7.2"
   }

@@ -1,23 +1,24 @@
 import "@viskit/reorder";
-import { Reorder, onDragEvent, onDropEvent, onStartEvent } from "@viskit/reorder";
-import { LitElement } from "lit-element";
+import { Reorder, DropEvent, ReorderEvent, DragEvent, EndEvent } from "@viskit/reorder";
+import { GestureDetail } from "@ionic/core";
+import { LitElement } from "lit";
 export declare class ReorderList extends LitElement {
-    reorder: Reorder;
-    createRenderRoot(): this;
-    constructor();
-    private hoverIndex;
-    private oldDraggableTransform;
-    private dragContainer;
-    private oldTransformMap;
-    reorderMove({ detail: { el, container, reorder, hoverContainer, hoverEl, hoverIndex }, }: onDragEvent): void;
+    static styles: import("lit").CSSResultGroup;
+    enable: boolean;
+    dragEl: HTMLElement;
     firstUpdated(): void;
-    disconnectedCallback(): void;
-    onStart({ detail: { container, el, gestureDetail, reorder } }: onStartEvent): void;
-    onDrag(event: onDragEvent): void;
-    onDrop({ detail: { el, complete } }: onDropEvent): void;
-    updated(map: Map<string, any>): Promise<void>;
+    render(): import("lit-html").TemplateResult<1>;
+    reorder: Reorder;
+    div: HTMLElement;
     containerSelector: string;
-    draggableClass: string;
+    containers: HTMLElement[];
+    updated(map: Map<string, any>): Promise<void>;
+    addStyle(container: HTMLElement): void;
+    canStart(detail: GestureDetail): void;
+    onEnd({ data }: EndEvent): void;
+    onDrag({ data, deltaY, container }: DragEvent): void;
+    onReorder({ data, y, container, hoverIndex, hoverable, hoverContainer, draggable, draggableIndex, draggableRect, hoverableRect, }: ReorderEvent): void;
+    onDrop({ data, complete }: DropEvent): void;
 }
 declare global {
     interface HTMLElementTagNameMap {

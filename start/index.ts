@@ -1,7 +1,9 @@
 import "../src";
 import "@viskit/content";
 import { html, LitElement, css } from "lit-element";
+import { state, query } from "lit-element/decorators.js";
 import { defineCustomElements } from "@ionic/core/loader";
+
 defineCustomElements(window);
 
 export class Demo extends LitElement {
@@ -9,42 +11,62 @@ export class Demo extends LitElement {
     ion-app {
       height: 100%;
     }
+
+    ion-item-sliding > ion-item {
+      pointer-events:none;
+    }
   `;
+
+  @query("ion-list")
+  list: HTMLIonListElement;
+
+  @state()
+  bool = true;
+
+  firstUpdated(){
+  }
+
   render() {
     return html`
       <ion-app>
         <ion-content fullscreen>
-          <viskit-reorder-list .containerSelector=${"ion-list"}>
+          <viskit-reorder-list
+            .containerSelector=${"ion-list"}
+            .enable=${this.bool}
+          >
             <ion-list>
               <ion-item>aaa</ion-item>
-              <ion-item-sliding>
+              <ion-item-sliding @long-press=${(e)=>console.log("long .slide..",e.target)}>
                 <ion-item-options side="start">
-                  <ion-item-option  
+                  <ion-item-option
+                    @click=${async () => {
+                      await this.list.closeSlidingItems();
+                      this.bool = true;
+                    }}
                     >Favorite</ion-item-option
                   >
-                  <ion-item-option color="danger" 
+                  <ion-item-option
+                    color="danger"
+                    @click=${async () => {
+                      await this.list.closeSlidingItems();
+                      this.bool = true;
+                    }}
                     >Share</ion-item-option
                   >
                 </ion-item-options>
 
-                <ion-item>
+                <ion-item  >
                   <ion-label>Item 1</ion-label>
                 </ion-item>
 
                 <ion-item-options side="end">
-                  <ion-item-option 
-                    >Unread</ion-item-option
-                  >
+                  <ion-item-option>Unread</ion-item-option>
                 </ion-item-options>
               </ion-item-sliding>
               <ion-item-sliding>
                 <ion-item-options side="start">
-                  <ion-item-option  
-                    >Favorite</ion-item-option
-                  >
-                  <ion-item-option color="danger" 
-                    >Share</ion-item-option
-                  >
+                  <ion-item-option>Favorite</ion-item-option>
+                  <ion-item-option color="danger">Share</ion-item-option>
                 </ion-item-options>
 
                 <ion-item>
@@ -52,9 +74,7 @@ export class Demo extends LitElement {
                 </ion-item>
 
                 <ion-item-options side="end">
-                  <ion-item-option 
-                    >Unread</ion-item-option
-                  >
+                  <ion-item-option>Unread</ion-item-option>
                 </ion-item-options>
               </ion-item-sliding>
             </ion-list>

@@ -5,13 +5,17 @@ import {
   DropEvent,
   ReorderEvent,
   DragEvent,
+  EndEvent,
 } from "@viskit/reorder";
+import { GestureDetail } from "@ionic/core";
 import { LitElement, html, css } from "lit";
-import { query, property,state } from "lit/decorators.js";
+import { query, property, state } from "lit/decorators.js";
 import * as Rematrix from "rematrix";
 import clone from "clone-element";
 
-const clear = (children: HTMLCollection,deep = false) => {
+import { register } from "@viskit/long-press";
+
+const clear = (children: HTMLCollection, deep = false) => {
   const childrens = Array.from(children) as HTMLElement[];
   childrens.forEach((c) => {
     c.style.transform = "";
@@ -26,10 +30,57 @@ export class ReorderList extends LitElement {
     }
   `;
 
+  @property({ type: Boolean })
+  enable = false;
+
+  dragEl: HTMLElement;
+
+  firstUpdated() {
+    register(this);
+
+    this.addEventListener("long-press", (e: PointerEvent) => {
+      console.log(e);
+      const draggable = this.shadowRoot
+        .elementsFromPoint(e.clientX, e.clientY)
+        .find((el) =>
+          this.containers.find((c) => Array.from(c.children).includes(el))
+        );
+
+      if (draggable) {
+        this.enable = true;
+
+        const dragEl = draggable.cloneNode(true) as HTMLElement;
+        const styles = window.getComputedStyle(draggable);
+
+        for (let i = 0, len = styles.length; i < len; i++) {
+          const key = styles.item(i);
+          dragEl.style.setProperty(key, styles.getPropertyValue(key));
+        }
+
+        const { left, top, width, height } = draggable.getBoundingClientRect();
+        dragEl.style.position = "absolute";
+        dragEl.style.top = top + "px";
+        dragEl.style.left = left + "px";
+        dragEl.style.pointerEvents = "none";
+        dragEl.style.margin = "0";
+        dragEl.style.width = width + "px";
+        dragEl.style.height = height + "px";
+        dragEl.style.transition = "";
+        dragEl.classList.add("draggable");
+
+        document.body.appendChild(dragEl);
+
+        this.dragEl = dragEl;
+
+        (draggable as HTMLElement).style.opacity = "0";
+      }
+    });
+  }
+
   render() {
     return html`
       <viskit-reorder
-        @viskit-start=${this.onStart}
+        .enable=${this.enable}
         @viskit-drag=${this.onDrag}
         @viskit-reorder=${this.onReorder}
         @viskit-drop=${this.onDrop}
@@ -43,54 +94,60 @@ export class ReorderList extends LitElement {
   @query("viskit-reorder")
   reorder: Reorder;
 
+  @query("div")
+  div: HTMLElement;
+
   @property()
-  containerSelector = ""
+  containerSelector = "";
 
   @state()
   containers: HTMLElement[] = [this];
 
-  updated(map: Map<string,any>){
-    if(map.has("containerSelector") && this.containerSelector){
-      this.containers = Array.from(this.querySelectorAll(this.containerSelector)) as HTMLElement[]
+  async updated(map: Map<string, any>) {
+    if (map.has("containerSelector") && this.containerSelector) {
+      this.containers = Array.from(
+        this.querySelectorAll(this.containerSelector)
+      ) as HTMLElement[];
     }
 
-    if(map.has("containers") ){
-      this.containers.forEach(c=>this.addStyle(c));
+    if (map.has("containers")) {
+      this.containers.forEach((c) => this.addStyle(c));
     }
   }
 
-  addStyle(container: HTMLElement){
-    (Array.from(container.children) as HTMLElement[]).forEach(el=>{
+  addStyle(container: HTMLElement) {
+    (Array.from(container.children) as HTMLElement[]).forEach((el) => {
       el.style.transition = "transform .2s";
-    })
+    });
   }
 
-  onStart({ draggable, data, container, deltaX }: StartEvent) {
-    console.log("cannnn")
-    // clone
-    const dragEl = draggable.cloneNode(true) as HTMLElement;
-    const { left, top, width, height } = draggable.getBoundingClientRect();
-    dragEl.style.position = "absolute";
-    dragEl.style.top = top + "px";
-    dragEl.style.left = left + "px";
-    dragEl.style.pointerEvents = "none";
-    dragEl.style.margin = "0";
-    dragEl.style.width = width + "px";
-    dragEl.style.height = height + "px";
-    dragEl.style.transition = "";
-    dragEl.classList.add("draggable");
+  canStart(detail: GestureDetail) {
+    if (this.enable) {
+      const { currentX, currentY } = detail;
+      const draggable = this.shadowRoot
+        .elementsFromPoint(currentX, currentY)
+        .find((el) =>
+          this.containers.find((c) => Array.from(c.children).includes(el))
+        );
 
-    // dragEl.style.transform = `translateY(${}px)`;
-    data.dragEl = dragEl;
-
-    document.body.appendChild(dragEl);
-
-    draggable.style.opacity = "0";
+      if (draggable) {
+        draggable.addEventListener("long-press", (e: PointerEvent) => {});
+      }
+    }
   }
 
-  onDrag({ data, deltaY ,container}: DragEvent) {
+  onEnd({data}: EndEvent) {
+    console.log("end...");
+    console.log("on end...");
 
-    data.dragEl.style.transform = `translateY(${deltaY}px)`;
+    data.draggable.style.opacity = "1";
+    data.hoverContainer && clear(data.hoverContainer.children);
+    data.container && clear(data.container.children, true);
+    this.dragEl.remove();
+  }
+
+  onDrag({ data, deltaY, container }: DragEvent) {
+    this.dragEl.style.transform = `translateY(${deltaY}px)`;
   }
 
   onReorder({
@@ -105,6 +162,7 @@ export class ReorderList extends LitElement {
     draggableRect,
     hoverableRect,
   }: ReorderEvent) {
+
     const prevHoverContainer = data.hoverContainer as HTMLElement;
 
     // clear prev
@@ -202,15 +260,13 @@ export class ReorderList extends LitElement {
   }
 
   onDrop({ data, complete }: DropEvent) {
-    data.dragEl.remove();
-    data.draggable.style.opacity = "1";
-    data.hoverContainer && clear(data.hoverContainer.children);
-    data.container && clear(data.container.children,true);
-
+    console.log("on drop...");
+    
     if (data.draggable !== data.hoverable) {
       complete(data.after);
     }
   }
+
 }
 
 window.customElements.define("viskit-reorder-list", ReorderList);
