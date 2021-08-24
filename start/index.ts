@@ -36,7 +36,7 @@ export class Demo extends LitElement {
           >
             <ion-list>
               <ion-item>aaa</ion-item>
-              <ion-item-sliding @long-press=${(e)=>console.log("long .slide..",e.target)}>
+              <ion-item-sliding >
                 <ion-item-options side="start">
                   <ion-item-option
                     @click=${async () => {
