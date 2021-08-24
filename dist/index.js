@@ -54,48 +54,51 @@ class ReorderList extends external_lit_namespaceObject.LitElement {
     constructor() {
         super(...arguments);
         this.enable = false;
+        this.inEnable = false;
         this.containerSelector = "";
         this.containers = [this];
     }
     firstUpdated() {
-        (0,long_press_namespaceObject.register)(this);
+        (0,long_press_namespaceObject.register)(this.shadowRoot);
         this.addEventListener("long-press", (e) => {
-            console.log(e);
-            const draggable = this.shadowRoot
-                .elementsFromPoint(e.clientX, e.clientY)
-                .find((el) => this.containers.find((c) => Array.from(c.children).includes(el)));
-            if (draggable) {
-                this.enable = true;
-                const dragEl = draggable.cloneNode(true);
-                const styles = window.getComputedStyle(draggable);
-                for (let i = 0, len = styles.length; i < len; i++) {
-                    const key = styles.item(i);
-                    dragEl.style.setProperty(key, styles.getPropertyValue(key));
+            const draggable = this.selectedDragEl = e.target;
+            if (this.reorder.containers.includes(draggable.parentElement)) {
+                if (draggable) {
+                    this.inEnable = true;
+                    const dragEl = draggable.cloneNode(true);
+                    const styles = window.getComputedStyle(draggable);
+                    for (let i = 0, len = styles.length; i < len; i++) {
+                        const key = styles.item(i);
+                        dragEl.style.setProperty(key, styles.getPropertyValue(key));
+                    }
+                    const { left, top, width, height } = draggable.getBoundingClientRect();
+                    dragEl.style.position = "absolute";
+                    dragEl.style.top = top + "px";
+                    dragEl.style.left = left + "px";
+                    dragEl.style.pointerEvents = "none";
+                    dragEl.style.margin = "0";
+                    dragEl.style.width = width + "px";
+                    dragEl.style.height = height + "px";
+                    dragEl.style.transition = "";
+                    dragEl.style.boxShadow = "5px 5px 5px #333";
+                    dragEl.classList.add("draggable");
+                    document.body.appendChild(dragEl);
+                    this.dragEl = dragEl;
+                    draggable.style.opacity = "0";
                 }
-                const { left, top, width, height } = draggable.getBoundingClientRect();
-                dragEl.style.position = "absolute";
-                dragEl.style.top = top + "px";
-                dragEl.style.left = left + "px";
-                dragEl.style.pointerEvents = "none";
-                dragEl.style.margin = "0";
-                dragEl.style.width = width + "px";
-                dragEl.style.height = height + "px";
-                dragEl.style.transition = "";
-                dragEl.classList.add("draggable");
-                document.body.appendChild(dragEl);
-                this.dragEl = dragEl;
-                draggable.style.opacity = "0";
             }
-        });
+        }, true);
     }
     render() {
         return external_lit_namespaceObject.html `
       <viskit-reorder
-        .enable=${this.enable}
+        .enable=${this.enable && this.inEnable}
         @viskit-drag=${this.onDrag}
         @viskit-reorder=${this.onReorder}
         @viskit-drop=${this.onDrop}
+        @viskit-end=${this.onEnd}
         .containers=${this.containers}
+        data-longpress-delay="2000"
       >
         <slot></slot>
       </viskit-reorder>
@@ -116,24 +119,12 @@ class ReorderList extends external_lit_namespaceObject.LitElement {
             el.style.transition = "transform .2s";
         });
     }
-    canStart(detail) {
-        if (this.enable) {
-            const { currentX, currentY } = detail;
-            const draggable = this.shadowRoot
-                .elementsFromPoint(currentX, currentY)
-                .find((el) => this.containers.find((c) => Array.from(c.children).includes(el)));
-            if (draggable) {
-                draggable.addEventListener("long-press", (e) => { });
-            }
-        }
-    }
     onEnd({ data }) {
-        console.log("end...");
-        console.log("on end...");
-        data.draggable.style.opacity = "1";
+        this.inEnable = false;
+        this.selectedDragEl && (this.selectedDragEl.style.opacity = "1");
         data.hoverContainer && clear(data.hoverContainer.children);
         data.container && clear(data.container.children, true);
-        this.dragEl.remove();
+        this.dragEl && this.dragEl.remove();
     }
     onDrag({ data, deltaY, container }) {
         this.dragEl.style.transform = `translateY(${deltaY}px)`;
@@ -231,7 +222,6 @@ class ReorderList extends external_lit_namespaceObject.LitElement {
         data.dropIndex = index;
     }
     onDrop({ data, complete }) {
-        console.log("on drop...");
         if (data.draggable !== data.hoverable) {
             complete(data.after);
         }
@@ -245,6 +235,9 @@ ReorderList.styles = external_lit_namespaceObject.css `
 (0,external_tslib_namespaceObject.__decorate)([
     (0,decorators_js_namespaceObject.property)({ type: Boolean })
 ], ReorderList.prototype, "enable", void 0);
+(0,external_tslib_namespaceObject.__decorate)([
+    (0,decorators_js_namespaceObject.state)()
+], ReorderList.prototype, "inEnable", void 0);
 (0,external_tslib_namespaceObject.__decorate)([
     (0,decorators_js_namespaceObject.query)("viskit-reorder")
 ], ReorderList.prototype, "reorder", void 0);
