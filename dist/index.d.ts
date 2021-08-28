@@ -15,7 +15,7 @@ export declare class ReorderList extends LitElement {
     containers: HTMLElement[];
     updated(map: Map<string, any>): Promise<void>;
     addStyle(container: HTMLElement): void;
-    onEnd({ data }: EndEvent): void;
+    onEnd(ev: EndEvent | PointerEvent): void;
     onDrag({ data, deltaY, container }: DragEvent): void;
     onReorder({ data, y, container, hoverIndex, hoverable, hoverContainer, draggable, draggableIndex, draggableRect, hoverableRect, }: ReorderEvent): void;
     onDrop({ data, complete }: DropEvent): void;

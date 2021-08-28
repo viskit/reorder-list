@@ -11,10 +11,6 @@ export class Demo extends LitElement {
     ion-app {
       height: 100%;
     }
-
-    ion-item-sliding > ion-item {
-      pointer-events:none;
-    }
   `;
 
   @query("ion-list")
@@ -22,9 +18,6 @@ export class Demo extends LitElement {
 
   @state()
   bool = true;
-
-  firstUpdated(){
-  }
 
   render() {
     return html`

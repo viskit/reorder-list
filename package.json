@@ -1,6 +1,6 @@
 {
   "name": "@viskit/reorder-list",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "reorder web component",
   "main": "dist/index.js",
   "scripts": {
@@ -13,7 +13,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/viskit/viskit-reorder/issues"
   },
@@ -23,9 +23,7 @@
     "@viskit/webpack-configs": "^0.0.1"
   },
   "dependencies": {
-    "@viskit/long-press": "^0.0.12",
-    "@viskit/reorder": "^0.2.5",
-    "clone-element": "^0.1.0",
-    "rematrix": "^0.7.2"
+    "@viskit/long-press": "^0.0.13",
+    "@viskit/reorder": "^0.2.7"
   }
 }

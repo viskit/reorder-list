@@ -7,11 +7,9 @@ import {
   DragEvent,
   EndEvent,
 } from "@viskit/reorder";
-import { GestureDetail } from "@ionic/core";
+import {GestureDetail} from "@ionic/core";
 import { LitElement, html, css } from "lit";
 import { query, property, state } from "lit/decorators.js";
-import * as Rematrix from "rematrix";
-import clone from "clone-element";
 
 import { register } from "@viskit/long-press";
 
@@ -38,45 +36,44 @@ export class ReorderList extends LitElement {
 
   dragEl: HTMLElement;
 
-  selectedDragEl : HTMLElement;
+  selectedDragEl: HTMLElement;
 
   firstUpdated() {
     register(this.shadowRoot);
     this.addEventListener(
       "long-press",
       (e: PointerEvent) => {
-        const draggable  = this.selectedDragEl = e.target as HTMLElement;
-        if (this.reorder.containers.includes(draggable.parentElement)) {
-          if (draggable) {
-            this.inEnable = true;
+        const draggable = this.selectedDragEl;
 
-            const dragEl = draggable.cloneNode(true) as HTMLElement;
-            const styles = window.getComputedStyle(draggable);
+        if(draggable){
+          this.inEnable = true;
 
-            for (let i = 0, len = styles.length; i < len; i++) {
-              const key = styles.item(i);
-              dragEl.style.setProperty(key, styles.getPropertyValue(key));
-            }
+          const dragEl = draggable.cloneNode(true) as HTMLElement;
+          const styles = window.getComputedStyle(draggable);
 
-            const { left, top, width, height } =
-              draggable.getBoundingClientRect();
-            dragEl.style.position = "absolute";
-            dragEl.style.top = top + "px";
-            dragEl.style.left = left + "px";
-            dragEl.style.pointerEvents = "none";
-            dragEl.style.margin = "0";
-            dragEl.style.width = width + "px";
-            dragEl.style.height = height + "px";
-            dragEl.style.transition = "";
-            dragEl.style.boxShadow = "5px 5px 5px #333";
-            dragEl.classList.add("draggable");
-
-            document.body.appendChild(dragEl);
-
-            this.dragEl = dragEl;
-
-            (draggable as HTMLElement).style.opacity = "0";
+          for (let i = 0, len = styles.length; i < len; i++) {
+            const key = styles.item(i);
+            dragEl.style.setProperty(key, styles.getPropertyValue(key));
           }
+
+          const { left, top, width, height } =
+            draggable.getBoundingClientRect();
+          dragEl.style.position = "absolute";
+          dragEl.style.top = top + "px";
+          dragEl.style.left = left + "px";
+          dragEl.style.pointerEvents = "none";
+          dragEl.style.margin = "0";
+          dragEl.style.width = width + "px";
+          dragEl.style.height = height + "px";
+          dragEl.style.transition = "";
+          dragEl.style.boxShadow = "5px 5px 5px #333";
+
+          document.body.appendChild(dragEl);
+
+          this.dragEl = dragEl;
+
+          (draggable as HTMLElement).style.opacity = "0";
+
         }
       },
       true
@@ -87,12 +84,16 @@ export class ReorderList extends LitElement {
     return html`
       <viskit-reorder
         .enable=${this.enable && this.inEnable}
+        .canStart=${( e:GestureDetail)=>{
+          console.log(e.data.draggable);
+          this.selectedDragEl = e.data.draggable;
+        }}
         @viskit-drag=${this.onDrag}
         @viskit-reorder=${this.onReorder}
         @viskit-drop=${this.onDrop}
         @viskit-end=${this.onEnd}
+        @pointerup=${this.onEnd}
         .containers=${this.containers}
-        data-longpress-delay="2000"
       >
         <slot></slot>
       </viskit-reorder>
@@ -129,11 +130,18 @@ export class ReorderList extends LitElement {
     });
   }
 
-  onEnd({ data }: EndEvent) {
-    this.inEnable = false;
-    this.selectedDragEl && (this.selectedDragEl.style.opacity = "1");
-    data.hoverContainer && clear(data.hoverContainer.children);
-    data.container && clear(data.container.children, true);
+  onEnd(ev: EndEvent | PointerEvent) {
+    if (this.inEnable) {
+      this.inEnable = false;
+    }
+
+    const data = (ev as EndEvent).data;
+    if (data) {
+      data.hoverContainer && clear(data.hoverContainer.children);
+      data.container && clear(data.container.children, true);
+    }
+    this.selectedDragEl &&
+      this.selectedDragEl.style.setProperty("opacity", "unset");
     this.dragEl && this.dragEl.remove();
   }
 
