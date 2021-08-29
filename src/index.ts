@@ -85,8 +85,10 @@ export class ReorderList extends LitElement {
       <viskit-reorder
         .enable=${this.enable && this.inEnable}
         .canStart=${( e:GestureDetail)=>{
-          console.log(e.data.draggable);
           this.selectedDragEl = e.data.draggable;
+        }}
+        @viskit-start=${()=>{
+          this.dispatchEvent(new CustomEvent("viskit-start"));
         }}
         @viskit-drag=${this.onDrag}
         @viskit-reorder=${this.onReorder}
@@ -139,7 +141,9 @@ export class ReorderList extends LitElement {
     if (data) {
       data.hoverContainer && clear(data.hoverContainer.children);
       data.container && clear(data.container.children, true);
+      this.dispatchEvent(new CustomEvent("viskit-end"));
     }
+
     this.selectedDragEl &&
       this.selectedDragEl.style.setProperty("opacity", "unset");
     this.dragEl && this.dragEl.remove();
@@ -255,6 +259,7 @@ export class ReorderList extends LitElement {
 
     data.hoverContainer = hoverContainer;
     data.dropIndex = index;
+
   }
 
   onDrop({ data, complete }: DropEvent) {
