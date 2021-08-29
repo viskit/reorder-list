@@ -24,6 +24,6 @@
   },
   "dependencies": {
     "@viskit/long-press": "^0.0.13",
-    "@viskit/reorder": "^0.2.8"
+    "@viskit/reorder": "^0.2.9"
   }
 }
