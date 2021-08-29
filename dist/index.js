@@ -91,8 +91,10 @@ class ReorderList extends external_lit_namespaceObject.LitElement {
       <viskit-reorder
         .enable=${this.enable && this.inEnable}
         .canStart=${(e) => {
-            console.log(e.data.draggable);
             this.selectedDragEl = e.data.draggable;
+        }}
+        @viskit-start=${() => {
+            this.dispatchEvent(new CustomEvent("viskit-start"));
         }}
         @viskit-drag=${this.onDrag}
         @viskit-reorder=${this.onReorder}
@@ -128,6 +130,7 @@ class ReorderList extends external_lit_namespaceObject.LitElement {
         if (data) {
             data.hoverContainer && clear(data.hoverContainer.children);
             data.container && clear(data.container.children, true);
+            this.dispatchEvent(new CustomEvent("viskit-end"));
         }
         this.selectedDragEl &&
             this.selectedDragEl.style.setProperty("opacity", "unset");
@@ -255,7 +258,12 @@ ReorderList.styles = external_lit_namespaceObject.css `
     (0,decorators_js_namespaceObject.property)()
 ], ReorderList.prototype, "containerSelector", void 0);
 (0,external_tslib_namespaceObject.__decorate)([
-    (0,decorators_js_namespaceObject.state)()
+    (0,decorators_js_namespaceObject.property)({
+        attribute: false,
+        hasChanged(containers) {
+            return Array.isArray(containers) && containers.every(c => c instanceof HTMLElement);
+        }
+    })
 ], ReorderList.prototype, "containers", void 0);
 window.customElements.define("viskit-reorder-list", ReorderList);
 

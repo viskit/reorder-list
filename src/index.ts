@@ -111,7 +111,12 @@ export class ReorderList extends LitElement {
   @property()
   containerSelector = "";
 
-  @state()
+  @property({
+    attribute:false,
+    hasChanged(containers){
+      return Array.isArray(containers) && containers.every(c=>c instanceof HTMLElement);
+    }
+  })
   containers: HTMLElement[] = [this];
 
   async updated(map: Map<string, any>) {
