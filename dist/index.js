@@ -112,7 +112,7 @@ class ReorderList extends external_lit_namespaceObject.LitElement {
             if (map.has("containerSelector") && this.containerSelector) {
                 this.containers = Array.from(this.querySelectorAll(this.containerSelector));
             }
-            if (map.has("containers")) {
+            if (map.has("containers") && this.containers) {
                 this.containers.forEach((c) => this.addStyle(c));
             }
         });
@@ -132,26 +132,77 @@ class ReorderList extends external_lit_namespaceObject.LitElement {
             data.container && clear(data.container.children, true);
             this.dispatchEvent(new CustomEvent("viskit-end"));
         }
-        this.selectedDragEl &&
+        if (this.selectedDragEl) {
             this.selectedDragEl.style.setProperty("opacity", "unset");
+            this.selectedDragEl = null;
+        }
         this.dragEl && this.dragEl.remove();
     }
     onDrag({ data, deltaY, container }) {
         this.dragEl.style.transform = `translateY(${deltaY}px)`;
     }
     onReorder({ data, y, container, hoverIndex, hoverable, hoverContainer, draggable, draggableIndex, draggableRect, hoverableRect, }) {
-        const prevHoverContainer = data.hoverContainer;
-        // clear prev
-        let index = hoverIndex;
-        // clear previous cntainer's children transform
-        if (prevHoverContainer !== hoverContainer && prevHoverContainer) {
-            clear(prevHoverContainer.children);
-        }
-        if (container === hoverContainer) {
-            if (hoverIndex === draggableIndex) {
-                clear(hoverContainer.children);
+        if (hoverableRect && draggableRect) {
+            const prevHoverContainer = data.hoverContainer;
+            // clear prev
+            let index = hoverIndex;
+            // clear previous cntainer's children transform
+            if (prevHoverContainer !== hoverContainer && prevHoverContainer) {
+                clear(prevHoverContainer.children);
             }
-            else if (hoverIndex < draggableIndex) {
+            if (container === hoverContainer) {
+                if (hoverIndex === draggableIndex) {
+                    clear(hoverContainer.children);
+                }
+                else if (hoverIndex < draggableIndex) {
+                    if (y > hoverableRect.top + hoverableRect.height / 2) {
+                        ++index;
+                        data.after = true;
+                    }
+                    else {
+                        data.after = false;
+                    }
+                    if (index === draggableIndex) {
+                        clear(hoverContainer.children);
+                    }
+                    else {
+                        const children = Array.from(hoverContainer.children);
+                        this.addStyle(hoverContainer);
+                        for (let i = 0, len = children.length; i < len; i++) {
+                            let y = 0;
+                            if (i >= index && i < draggableIndex) {
+                                y = draggableRect.height;
+                            }
+                            children[i].style.transform = `translateY(${y}px)`;
+                        }
+                    }
+                }
+                else {
+                    if (y < hoverableRect.top + hoverableRect.height / 2) {
+                        --index;
+                        data.after = false;
+                    }
+                    else {
+                        data.after = true;
+                    }
+                    if (index === draggableIndex) {
+                        clear(hoverContainer.children);
+                    }
+                    else {
+                        const children = Array.from(hoverContainer.children);
+                        this.addStyle(hoverContainer);
+                        for (let i = 0, len = children.length; i < len; i++) {
+                            let y = 0;
+                            if (i > draggableIndex && i <= index) {
+                                y = -draggableRect.height;
+                            }
+                            children[i].style.transform = `translateY(${y}px)`;
+                        }
+                    }
+                }
+            }
+            else {
+                const fromTop = draggableRect.top < hoverableRect.top;
                 if (y > hoverableRect.top + hoverableRect.height / 2) {
                     ++index;
                     data.after = true;
@@ -159,77 +210,30 @@ class ReorderList extends external_lit_namespaceObject.LitElement {
                 else {
                     data.after = false;
                 }
-                if (index === draggableIndex) {
-                    clear(hoverContainer.children);
-                }
-                else {
-                    const children = Array.from(hoverContainer.children);
-                    this.addStyle(hoverContainer);
-                    for (let i = 0, len = children.length; i < len; i++) {
-                        let y = 0;
-                        if (i >= index && i < draggableIndex) {
+                const children = Array.from(hoverContainer.children);
+                for (let i = 0, len = children.length; i < len; i++) {
+                    let y = 0;
+                    if (index === children.length) {
+                        y = -draggableRect.height;
+                    }
+                    else {
+                        if (i >= index) {
                             y = draggableRect.height;
                         }
-                        children[i].style.transform = `translateY(${y}px)`;
                     }
-                }
-            }
-            else {
-                if (y < hoverableRect.top + hoverableRect.height / 2) {
-                    --index;
-                    data.after = false;
-                }
-                else {
-                    data.after = true;
-                }
-                if (index === draggableIndex) {
-                    clear(hoverContainer.children);
-                }
-                else {
-                    const children = Array.from(hoverContainer.children);
                     this.addStyle(hoverContainer);
-                    for (let i = 0, len = children.length; i < len; i++) {
-                        let y = 0;
-                        if (i > draggableIndex && i <= index) {
-                            y = -draggableRect.height;
-                        }
-                        children[i].style.transform = `translateY(${y}px)`;
+                    if ((fromTop && hoverIndex === 0 && !data.after) ||
+                        (!fromTop &&
+                            hoverIndex === hoverContainer.children.length - 1 &&
+                            data.after)) {
+                        y = y / 2;
                     }
+                    children[i].style.transform = `translateY(${y}px)`;
                 }
             }
+            data.hoverContainer = hoverContainer;
+            data.dropIndex = index;
         }
-        else {
-            const fromTop = draggableRect.top < hoverableRect.top;
-            if (y > hoverableRect.top + hoverableRect.height / 2) {
-                ++index;
-                data.after = true;
-            }
-            else {
-                data.after = false;
-            }
-            const children = Array.from(hoverContainer.children);
-            for (let i = 0, len = children.length; i < len; i++) {
-                let y = 0;
-                if (index === children.length) {
-                    y = -draggableRect.height;
-                }
-                else {
-                    if (i >= index) {
-                        y = draggableRect.height;
-                    }
-                }
-                this.addStyle(hoverContainer);
-                if ((fromTop && hoverIndex === 0 && !data.after) ||
-                    (!fromTop &&
-                        hoverIndex === hoverContainer.children.length - 1 &&
-                        data.after)) {
-                    y = y / 2;
-                }
-                children[i].style.transform = `translateY(${y}px)`;
-            }
-        }
-        data.hoverContainer = hoverContainer;
-        data.dropIndex = index;
     }
     onDrop({ data, complete }) {
         if (data.draggable !== data.hoverable) {
@@ -261,8 +265,9 @@ ReorderList.styles = external_lit_namespaceObject.css `
     (0,decorators_js_namespaceObject.property)({
         attribute: false,
         hasChanged(containers) {
-            return Array.isArray(containers) && containers.every(c => c instanceof HTMLElement);
-        }
+            return (Array.isArray(containers) &&
+                containers.every((c) => c instanceof HTMLElement));
+        },
     })
 ], ReorderList.prototype, "containers", void 0);
 window.customElements.define("viskit-reorder-list", ReorderList);

@@ -7,7 +7,7 @@ import {
   DragEvent,
   EndEvent,
 } from "@viskit/reorder";
-import {GestureDetail} from "@ionic/core";
+import { GestureDetail } from "@ionic/core";
 import { LitElement, html, css } from "lit";
 import { query, property, state } from "lit/decorators.js";
 
@@ -45,7 +45,7 @@ export class ReorderList extends LitElement {
       (e: PointerEvent) => {
         const draggable = this.selectedDragEl;
 
-        if(draggable){
+        if (draggable) {
           this.inEnable = true;
 
           const dragEl = draggable.cloneNode(true) as HTMLElement;
@@ -73,7 +73,6 @@ export class ReorderList extends LitElement {
           this.dragEl = dragEl;
 
           (draggable as HTMLElement).style.opacity = "0";
-
         }
       },
       true
@@ -84,10 +83,10 @@ export class ReorderList extends LitElement {
     return html`
       <viskit-reorder
         .enable=${this.enable && this.inEnable}
-        .canStart=${( e:GestureDetail)=>{
+        .canStart=${(e: GestureDetail) => {
           this.selectedDragEl = e.data.draggable;
         }}
-        @viskit-start=${()=>{
+        @viskit-start=${() => {
           this.dispatchEvent(new CustomEvent("viskit-start"));
         }}
         @viskit-drag=${this.onDrag}
@@ -112,10 +111,13 @@ export class ReorderList extends LitElement {
   containerSelector = "";
 
   @property({
-    attribute:false,
-    hasChanged(containers){
-      return Array.isArray(containers) && containers.every(c=>c instanceof HTMLElement);
-    }
+    attribute: false,
+    hasChanged(containers) {
+      return (
+        Array.isArray(containers) &&
+        containers.every((c) => c instanceof HTMLElement)
+      );
+    },
   })
   containers: HTMLElement[] = [this];
 
@@ -126,7 +128,7 @@ export class ReorderList extends LitElement {
       ) as HTMLElement[];
     }
 
-    if (map.has("containers")) {
+    if (map.has("containers") && this.containers) {
       this.containers.forEach((c) => this.addStyle(c));
     }
   }
@@ -149,8 +151,10 @@ export class ReorderList extends LitElement {
       this.dispatchEvent(new CustomEvent("viskit-end"));
     }
 
-    this.selectedDragEl &&
+    if (this.selectedDragEl) {
       this.selectedDragEl.style.setProperty("opacity", "unset");
+      this.selectedDragEl = null;
+    }
     this.dragEl && this.dragEl.remove();
   }
 
@@ -170,101 +174,106 @@ export class ReorderList extends LitElement {
     draggableRect,
     hoverableRect,
   }: ReorderEvent) {
-    const prevHoverContainer = data.hoverContainer as HTMLElement;
+    if (hoverableRect && draggableRect) {
+      const prevHoverContainer = data.hoverContainer as HTMLElement;
 
-    // clear prev
+      // clear prev
 
-    let index = hoverIndex;
+      let index = hoverIndex;
 
-    // clear previous cntainer's children transform
-    if (prevHoverContainer !== hoverContainer && prevHoverContainer) {
-      clear(prevHoverContainer.children);
-    }
+      // clear previous cntainer's children transform
+      if (prevHoverContainer !== hoverContainer && prevHoverContainer) {
+        clear(prevHoverContainer.children);
+      }
 
-    if (container === hoverContainer) {
-      if (hoverIndex === draggableIndex) {
-        clear(hoverContainer.children);
-      } else if (hoverIndex < draggableIndex) {
+      if (container === hoverContainer) {
+        if (hoverIndex === draggableIndex) {
+          clear(hoverContainer.children);
+        } else if (hoverIndex < draggableIndex) {
+          if (y > hoverableRect.top + hoverableRect.height / 2) {
+            ++index;
+            data.after = true;
+          } else {
+            data.after = false;
+          }
+          if (index === draggableIndex) {
+            clear(hoverContainer.children);
+          } else {
+            const children = Array.from(
+              hoverContainer.children
+            ) as HTMLElement[];
+            this.addStyle(hoverContainer);
+            for (let i = 0, len = children.length; i < len; i++) {
+              let y = 0;
+              if (i >= index && i < draggableIndex) {
+                y = draggableRect.height;
+              }
+              children[i].style.transform = `translateY(${y}px)`;
+            }
+          }
+        } else {
+          if (y < hoverableRect.top + hoverableRect.height / 2) {
+            --index;
+            data.after = false;
+          } else {
+            data.after = true;
+          }
+
+          if (index === draggableIndex) {
+            clear(hoverContainer.children);
+          } else {
+            const children = Array.from(
+              hoverContainer.children
+            ) as HTMLElement[];
+            this.addStyle(hoverContainer);
+            for (let i = 0, len = children.length; i < len; i++) {
+              let y = 0;
+              if (i > draggableIndex && i <= index) {
+                y = -draggableRect.height;
+              }
+
+              children[i].style.transform = `translateY(${y}px)`;
+            }
+          }
+        }
+      } else {
+        const fromTop = draggableRect.top < hoverableRect.top;
+
         if (y > hoverableRect.top + hoverableRect.height / 2) {
           ++index;
           data.after = true;
         } else {
           data.after = false;
         }
-        if (index === draggableIndex) {
-          clear(hoverContainer.children);
-        } else {
-          const children = Array.from(hoverContainer.children) as HTMLElement[];
-          this.addStyle(hoverContainer);
-          for (let i = 0, len = children.length; i < len; i++) {
-            let y = 0;
-            if (i >= index && i < draggableIndex) {
+        const children = Array.from(hoverContainer.children) as HTMLElement[];
+        for (let i = 0, len = children.length; i < len; i++) {
+          let y = 0;
+
+          if (index === children.length) {
+            y = -draggableRect.height;
+          } else {
+            if (i >= index) {
               y = draggableRect.height;
             }
-            children[i].style.transform = `translateY(${y}px)`;
           }
-        }
-      } else {
-        if (y < hoverableRect.top + hoverableRect.height / 2) {
-          --index;
-          data.after = false;
-        } else {
-          data.after = true;
-        }
 
-        if (index === draggableIndex) {
-          clear(hoverContainer.children);
-        } else {
-          const children = Array.from(hoverContainer.children) as HTMLElement[];
           this.addStyle(hoverContainer);
-          for (let i = 0, len = children.length; i < len; i++) {
-            let y = 0;
-            if (i > draggableIndex && i <= index) {
-              y = -draggableRect.height;
-            }
 
-            children[i].style.transform = `translateY(${y}px)`;
+          if (
+            (fromTop && hoverIndex === 0 && !data.after) ||
+            (!fromTop &&
+              hoverIndex === hoverContainer.children.length - 1 &&
+              data.after)
+          ) {
+            y = y / 2;
           }
+          children[i].style.transform = `translateY(${y}px)`;
         }
       }
-    } else {
-      const fromTop = draggableRect.top < hoverableRect.top;
 
-      if (y > hoverableRect.top + hoverableRect.height / 2) {
-        ++index;
-        data.after = true;
-      } else {
-        data.after = false;
-      }
-      const children = Array.from(hoverContainer.children) as HTMLElement[];
-      for (let i = 0, len = children.length; i < len; i++) {
-        let y = 0;
-
-        if (index === children.length) {
-          y = -draggableRect.height;
-        } else {
-          if (i >= index) {
-            y = draggableRect.height;
-          }
-        }
-
-        this.addStyle(hoverContainer);
-
-        if (
-          (fromTop && hoverIndex === 0 && !data.after) ||
-          (!fromTop &&
-            hoverIndex === hoverContainer.children.length - 1 &&
-            data.after)
-        ) {
-          y = y / 2;
-        }
-        children[i].style.transform = `translateY(${y}px)`;
-      }
+      data.hoverContainer = hoverContainer;
+      data.dropIndex = index;
     }
-
-    data.hoverContainer = hoverContainer;
-    data.dropIndex = index;
-
   }
 
   onDrop({ data, complete }: DropEvent) {
