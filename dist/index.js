@@ -35,9 +35,37 @@ const reorder_namespaceObject = require("@viskit/reorder");
 const external_lit_namespaceObject = require("lit");
 ;// CONCATENATED MODULE: external "lit/decorators.js"
 const decorators_js_namespaceObject = require("lit/decorators.js");
+;// CONCATENATED MODULE: ./src/cloneWithShadowRoots.ts
+/**
+ *
+ * From https://gist.github.com/developit/45c85e9be01e8c3f1a0ec073d600d01e
+ *
+ * cloneNode(true), but also clones shadow roots.
+ * @param {Element}
+ * @param {ShadowRoot[]} [shadowRoots] Any closed shadow roots passed here will be included.
+ */
+function cloneWithShadowRoots(node, shadowRoots = []) {
+    function walk(node, clone) {
+        console.log("node", node);
+        console.log("clone", clone);
+        let shadow = node.shadowRoot || shadowRoots.find((r) => r.host === node);
+        if (shadow) {
+            const cloneShadow = clone.shadowRoot || clone.attachShadow({ mode: shadow.mode });
+            cloneShadow.append(...[].map.call(shadow.childNodes, (c) => c.cloneNode(true)));
+        }
+        for (let i = 0; i < node.children.length; i++)
+            walk(node.children[i], clone.children[i]);
+    }
+    const clone = node.cloneNode(true);
+    walk(node, clone);
+    return clone;
+}
+
+
 ;// CONCATENATED MODULE: external "@viskit/long-press"
 const long_press_namespaceObject = require("@viskit/long-press");
 ;// CONCATENATED MODULE: ./src/index.ts
+
 
 
 
@@ -64,7 +92,7 @@ class ReorderList extends external_lit_namespaceObject.LitElement {
             const draggable = this.selectedDragEl;
             if (draggable) {
                 this.inEnable = true;
-                const dragEl = draggable.cloneNode(true);
+                const dragEl = cloneWithShadowRoots(draggable);
                 const styles = window.getComputedStyle(draggable);
                 for (let i = 0, len = styles.length; i < len; i++) {
                     const key = styles.item(i);

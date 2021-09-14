@@ -10,7 +10,7 @@ import {
 import { GestureDetail } from "@ionic/core";
 import { LitElement, html, css } from "lit";
 import { query, property, state } from "lit/decorators.js";
-
+import {cloneWithShadowRoots} from "./cloneWithShadowRoots";
 import { register } from "@viskit/long-press";
 
 const clear = (children: HTMLCollection, deep = false) => {
@@ -44,11 +44,10 @@ export class ReorderList extends LitElement {
       "long-press",
       (e: PointerEvent) => {
         const draggable = this.selectedDragEl;
-
         if (draggable) {
           this.inEnable = true;
 
-          const dragEl = draggable.cloneNode(true) as HTMLElement;
+          const dragEl = cloneWithShadowRoots(draggable) as HTMLElement;
           const styles = window.getComputedStyle(draggable);
 
           for (let i = 0, len = styles.length; i < len; i++) {
