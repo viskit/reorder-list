@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "strict": false,
+    "allowSyntheticDefaultImports": true,
+    "experimentalDecorators": true,
+    "jsxImportSource": "preact",
+    "isolatedModules": false,
+    "esModuleInterop": true,
+    "moduleResolution": "Node",
+    "module": "es2020",
+    "useDefineForClassFields": false,
+    "declaration": true,
+    "resolveJsonModule": true,
+    "strictNullChecks": false
+  },
+  "include": ["src/**/*","start/**/*"]
+}

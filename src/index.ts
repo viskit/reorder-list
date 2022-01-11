@@ -84,6 +84,7 @@ export class ReorderList extends LitElement {
         .enable=${this.enable && this.inEnable}
         .canStart=${(e: GestureDetail) => {
           this.selectedDragEl = e.data.draggable;
+          return true;
         }}
         @viskit-start=${() => {
           this.dispatchEvent(new CustomEvent("viskit-start"));

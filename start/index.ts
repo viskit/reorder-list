@@ -1,63 +1,54 @@
 import "../src";
-import "@viskit/content";
+import "@viskit/scroll-content";
 import { html, LitElement, css } from "lit-element";
 import { state, query } from "lit-element/decorators.js";
-import { defineCustomElements } from "@ionic/core/loader";
-import { Content } from "@viskit/content";
+import { ScrollContent } from "@viskit/scroll-content";
 import { ReorderEvent } from "@viskit/reorder";
 import { ReorderList } from "../src";
-
-defineCustomElements(window);
+import { FixedController } from "@viskit/scroll-content-fixed-controller";
 
 export class Demo extends LitElement {
   static styles = css`
-    ion-app {
-      height: 100%;
+    #app {
+      height: 100px;
     }
   `;
-
-  @query("ion-list")
-  list: HTMLIonListElement;
 
   @query("viskit-reorder-list")
   reorderList: ReorderList;
 
-  @query("viskit-content")
-  content: Content;
+  @query("viskit-scroll-content")
+  content: ScrollContent;
 
   @state()
   bool = true;
 
   stop: () => void = null;
 
-  firstUpdated() {
+  async firstUpdated() {
+    await this.content.updateComplete;
+    const fixed = new FixedController(this.content);
+    this.content.scrollToBottom();
+    let scrollTop;
     setTimeout(() => {
-      let scrollTop = 0;
-
       this.reorderList.reorder.addEventListener("viskit-start", () => {
-        this.content.scrollable = false;
-        scrollTop = this.content.scrollEl.scrollTop;
+        this.content.disable = true;
+        scrollTop = this.content.content.scrollTop;
       });
 
       this.reorderList.reorder.addEventListener(
         "viskit-reorder",
         (ev: ReorderEvent) => {
           if (ev.currentY < 10) {
-            this.reorderList.reorder;
-            if (!this.stop) {
-              this.stop = this.content.scrollToDir(-1);
-            }
+            this.content.scrolling(-1);
           } else {
-            if (this.stop) {
-              this.stop();
-              this.stop = null;
-              const offsetY = this.content.scrollEl.scrollTop - scrollTop;
-              console.log("offsetY", offsetY);
-              this.reorderList.reorder.mutation({
-                x: 0,
-                y: offsetY,
-              });
-            }
+            this.content.stopScrolling();
+
+            const offsetY = this.content.content.scrollTop - scrollTop;
+            this.reorderList.reorder.mutation({
+              x: 0,
+              y: offsetY,
+            });
           }
         }
       );
@@ -66,64 +57,34 @@ export class Demo extends LitElement {
 
   render() {
     return html`
-      <ion-app>
-        <ion-content fullscreen>
-          <viskit-content>
-            <viskit-reorder-list
-              .containerSelector=${"ion-list"}
-              .enable=${this.bool}
-              @viskit-end=${() => {
-                this.content.scrollable = true;
-                this.stop && this.stop();
-              }}
-            >
-              <ion-list>
-                <ion-item-sliding>
-                  <ion-item-options side="start">
-                    <ion-item-option
-                      @click=${async () => {
-                        await this.list.closeSlidingItems();
-                        this.bool = true;
-                      }}
-                      >Favorite</ion-item-option
-                    >
-                    <ion-item-option
-                      color="danger"
-                      @click=${async () => {
-                        await this.list.closeSlidingItems();
-                        this.bool = true;
-                      }}
-                      >Share</ion-item-option
-                    >
-                  </ion-item-options>
-
-                  <ion-item>
-                    <ion-label>Item 1</ion-label>
-                  </ion-item>
-
-                  <ion-item-options side="end">
-                    <ion-item-option>Unread</ion-item-option>
-                  </ion-item-options>
-                </ion-item-sliding>
-                <ion-item-sliding>
-                  <ion-item-options side="start">
-                    <ion-item-option>Favorite</ion-item-option>
-                    <ion-item-option color="danger">Share</ion-item-option>
-                  </ion-item-options>
-
-                  <ion-item>
-                    <ion-label>Item 2</ion-label>
-                  </ion-item>
-
-                  <ion-item-options side="end">
-                    <ion-item-option>Unread</ion-item-option>
-                  </ion-item-options>
-                </ion-item-sliding>
-              </ion-list>
-            </viskit-reorder-list>
-          </viskit-content>
-        </ion-content>
-      </ion-app>
+      <div id="app">
+        <viskit-scroll-content>
+          <viskit-reorder-list .containerSelector=${"ul"} .enable=${this.bool}>
+            <ul>
+              <li>111</li>
+              <li>222</li>
+              <li>333</li>
+              <li>444</li>
+              <li>555</li>
+              <li>666</li>
+              <li>777</li>
+              <li>777</li>
+              <li>777</li>
+              <li>777</li>
+              <li>777</li>
+              <li>777</li>
+              <li>777</li>
+              <li>777</li>
+              <li>777</li>
+              <li>777</li>
+              <li>777</li>
+              <li>777</li>
+              <li>777</li>
+              <li>777</li>
+            </ul>
+          </viskit-reorder-list>
+        </viskit-scroll-content>
+      </div>
     `;
   }
 }

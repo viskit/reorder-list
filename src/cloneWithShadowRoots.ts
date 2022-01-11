@@ -8,8 +8,6 @@
  */
 function cloneWithShadowRoots(node, shadowRoots = []) {
   function walk(node, clone) {
-    console.log("node", node);
-    console.log("clone", clone);
 
     let shadow = node.shadowRoot || shadowRoots.find((r) => r.host === node);
     if (shadow) {

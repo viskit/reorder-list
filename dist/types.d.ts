@@ -1,8 +1,7 @@
-import "@viskit/reorder";
 import { Reorder, DropEvent, ReorderEvent, DragEvent, EndEvent } from "@viskit/reorder";
 import { LitElement } from "lit";
-export declare class ReorderList extends LitElement {
-    static styles: import("lit").CSSResultGroup;
+export class ReorderList extends LitElement {
+    static styles: import("lit").CSSResult;
     enable: boolean;
     inEnable: boolean;
     dragEl: HTMLElement;
@@ -25,3 +24,5 @@ declare global {
         "viskit-reorder-list": ReorderList;
     }
 }
+
+//# sourceMappingURL=types.d.ts.map

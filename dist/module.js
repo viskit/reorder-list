@@ -1,13 +1,14 @@
-require("@viskit/reorder");
-var $1ZQrD$lit = require("lit");
-var $1ZQrD$litdecoratorsjs = require("lit/decorators.js");
-var $1ZQrD$viskitlongpress = require("@viskit/long-press");
+import "@viskit/reorder";
+import {html as $f3Ts0$html, LitElement as $f3Ts0$LitElement, css as $f3Ts0$css} from "lit";
+import {property as $f3Ts0$property, state as $f3Ts0$state, query as $f3Ts0$query} from "lit/decorators.js";
+import {register as $f3Ts0$register} from "@viskit/long-press";
 
 function $parcel$export(e, n, v, s) {
   Object.defineProperty(e, n, {get: v, set: s, enumerable: true, configurable: true});
 }
+var $113d663bca6ee001$exports = {};
 
-$parcel$export(module.exports, "ReorderList", () => $b03e17997ed23475$export$f40fc8d0c925c16f, (v) => $b03e17997ed23475$export$f40fc8d0c925c16f = v);
+$parcel$export($113d663bca6ee001$exports, "ReorderList", () => $113d663bca6ee001$export$f40fc8d0c925c16f, (v) => $113d663bca6ee001$export$f40fc8d0c925c16f = v);
 
 
 
@@ -18,7 +19,7 @@ $parcel$export(module.exports, "ReorderList", () => $b03e17997ed23475$export$f40
  * cloneNode(true), but also clones shadow roots.
  * @param {Element}
  * @param {ShadowRoot[]} [shadowRoots] Any closed shadow roots passed here will be included.
- */ function $07c5c324c62afdcf$export$bed73f3f6cfdbb7d(node1, shadowRoots = []) {
+ */ function $07a60613137be1e0$export$bed73f3f6cfdbb7d(node1, shadowRoots = []) {
     function walk(node, clone) {
         let shadow = node.shadowRoot || shadowRoots.find((r)=>r.host === node
         );
@@ -38,13 +39,13 @@ $parcel$export(module.exports, "ReorderList", () => $b03e17997ed23475$export$f40
 
 
 
-var $b03e17997ed23475$var$__decorate = undefined && undefined.__decorate || function(decorators, target, key, desc) {
+var $113d663bca6ee001$var$__decorate = undefined && undefined.__decorate || function(decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-var $b03e17997ed23475$var$__awaiter = undefined && undefined.__awaiter || function(thisArg, _arguments, P, generator) {
+var $113d663bca6ee001$var$__awaiter = undefined && undefined.__awaiter || function(thisArg, _arguments, P, generator) {
     function adopt(value) {
         return value instanceof P ? value : new P(function(resolve) {
             resolve(value);
@@ -71,14 +72,14 @@ var $b03e17997ed23475$var$__awaiter = undefined && undefined.__awaiter || functi
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-const $b03e17997ed23475$var$clear = (children, deep = false)=>{
+const $113d663bca6ee001$var$clear = (children, deep = false)=>{
     const childrens = Array.from(children);
     childrens.forEach((c)=>{
         c.style.transform = "";
         deep && (c.style.transition = "");
     });
 };
-class $b03e17997ed23475$export$f40fc8d0c925c16f extends $1ZQrD$lit.LitElement {
+class $113d663bca6ee001$export$f40fc8d0c925c16f extends $f3Ts0$LitElement {
     constructor(){
         super(...arguments);
         this.enable = false;
@@ -89,12 +90,12 @@ class $b03e17997ed23475$export$f40fc8d0c925c16f extends $1ZQrD$lit.LitElement {
         ];
     }
     firstUpdated() {
-        $1ZQrD$viskitlongpress.register(this.shadowRoot);
+        $f3Ts0$register(this.shadowRoot);
         this.addEventListener("long-press", (e)=>{
             const draggable = this.selectedDragEl;
             if (draggable) {
                 this.inEnable = true;
-                const dragEl = $07c5c324c62afdcf$export$bed73f3f6cfdbb7d(draggable);
+                const dragEl = $07a60613137be1e0$export$bed73f3f6cfdbb7d(draggable);
                 const styles = window.getComputedStyle(draggable);
                 for(let i = 0, len = styles.length; i < len; i++){
                     const key = styles.item(i);
@@ -117,7 +118,7 @@ class $b03e17997ed23475$export$f40fc8d0c925c16f extends $1ZQrD$lit.LitElement {
         }, true);
     }
     render() {
-        return $1ZQrD$lit.html`
+        return $f3Ts0$html`
       <viskit-reorder
         .enable=${this.enable && this.inEnable}
         .canStart=${(e)=>{
@@ -139,7 +140,7 @@ class $b03e17997ed23475$export$f40fc8d0c925c16f extends $1ZQrD$lit.LitElement {
     `;
     }
     updated(map) {
-        return $b03e17997ed23475$var$__awaiter(this, void 0, void 0, function*() {
+        return $113d663bca6ee001$var$__awaiter(this, void 0, void 0, function*() {
             if (map.has("containerSelector") && this.containerSelector) this.containers = Array.from(this.querySelectorAll(this.containerSelector));
             if (map.has("containers") && this.containers) this.containers.forEach((c)=>this.addStyle(c)
             );
@@ -154,8 +155,8 @@ class $b03e17997ed23475$export$f40fc8d0c925c16f extends $1ZQrD$lit.LitElement {
         if (this.inEnable) this.inEnable = false;
         const data = ev.data;
         if (data) {
-            data.hoverContainer && $b03e17997ed23475$var$clear(data.hoverContainer.children);
-            data.container && $b03e17997ed23475$var$clear(data.container.children, true);
+            data.hoverContainer && $113d663bca6ee001$var$clear(data.hoverContainer.children);
+            data.container && $113d663bca6ee001$var$clear(data.container.children, true);
             this.dispatchEvent(new CustomEvent("viskit-end"));
         }
         if (this.selectedDragEl) {
@@ -173,15 +174,15 @@ class $b03e17997ed23475$export$f40fc8d0c925c16f extends $1ZQrD$lit.LitElement {
             // clear prev
             let index = hoverIndex;
             // clear previous cntainer's children transform
-            if (prevHoverContainer !== hoverContainer && prevHoverContainer) $b03e17997ed23475$var$clear(prevHoverContainer.children);
+            if (prevHoverContainer !== hoverContainer && prevHoverContainer) $113d663bca6ee001$var$clear(prevHoverContainer.children);
             if (container === hoverContainer) {
-                if (hoverIndex === draggableIndex) $b03e17997ed23475$var$clear(hoverContainer.children);
+                if (hoverIndex === draggableIndex) $113d663bca6ee001$var$clear(hoverContainer.children);
                 else if (hoverIndex < draggableIndex) {
                     if (y > hoverableRect.top + hoverableRect.height / 2) {
                         ++index;
                         data.after = true;
                     } else data.after = false;
-                    if (index === draggableIndex) $b03e17997ed23475$var$clear(hoverContainer.children);
+                    if (index === draggableIndex) $113d663bca6ee001$var$clear(hoverContainer.children);
                     else {
                         const children = Array.from(hoverContainer.children);
                         this.addStyle(hoverContainer);
@@ -196,7 +197,7 @@ class $b03e17997ed23475$export$f40fc8d0c925c16f extends $1ZQrD$lit.LitElement {
                         --index;
                         data.after = false;
                     } else data.after = true;
-                    if (index === draggableIndex) $b03e17997ed23475$var$clear(hoverContainer.children);
+                    if (index === draggableIndex) $113d663bca6ee001$var$clear(hoverContainer.children);
                     else {
                         const children = Array.from(hoverContainer.children);
                         this.addStyle(hoverContainer);
@@ -231,38 +232,39 @@ class $b03e17997ed23475$export$f40fc8d0c925c16f extends $1ZQrD$lit.LitElement {
         if (data.draggable !== data.hoverable) complete(data.after);
     }
 }
-$b03e17997ed23475$export$f40fc8d0c925c16f.styles = $1ZQrD$lit.css`
+$113d663bca6ee001$export$f40fc8d0c925c16f.styles = $f3Ts0$css`
     :host {
       display: block;
     }
   `;
-$b03e17997ed23475$var$__decorate([
-    $1ZQrD$litdecoratorsjs.property({
+$113d663bca6ee001$var$__decorate([
+    $f3Ts0$property({
         type: Boolean
     })
-], $b03e17997ed23475$export$f40fc8d0c925c16f.prototype, "enable", void 0);
-$b03e17997ed23475$var$__decorate([
-    $1ZQrD$litdecoratorsjs.state()
-], $b03e17997ed23475$export$f40fc8d0c925c16f.prototype, "inEnable", void 0);
-$b03e17997ed23475$var$__decorate([
-    $1ZQrD$litdecoratorsjs.query("viskit-reorder")
-], $b03e17997ed23475$export$f40fc8d0c925c16f.prototype, "reorder", void 0);
-$b03e17997ed23475$var$__decorate([
-    $1ZQrD$litdecoratorsjs.query("div")
-], $b03e17997ed23475$export$f40fc8d0c925c16f.prototype, "div", void 0);
-$b03e17997ed23475$var$__decorate([
-    $1ZQrD$litdecoratorsjs.property()
-], $b03e17997ed23475$export$f40fc8d0c925c16f.prototype, "containerSelector", void 0);
-$b03e17997ed23475$var$__decorate([
-    $1ZQrD$litdecoratorsjs.property({
+], $113d663bca6ee001$export$f40fc8d0c925c16f.prototype, "enable", void 0);
+$113d663bca6ee001$var$__decorate([
+    $f3Ts0$state()
+], $113d663bca6ee001$export$f40fc8d0c925c16f.prototype, "inEnable", void 0);
+$113d663bca6ee001$var$__decorate([
+    $f3Ts0$query("viskit-reorder")
+], $113d663bca6ee001$export$f40fc8d0c925c16f.prototype, "reorder", void 0);
+$113d663bca6ee001$var$__decorate([
+    $f3Ts0$query("div")
+], $113d663bca6ee001$export$f40fc8d0c925c16f.prototype, "div", void 0);
+$113d663bca6ee001$var$__decorate([
+    $f3Ts0$property()
+], $113d663bca6ee001$export$f40fc8d0c925c16f.prototype, "containerSelector", void 0);
+$113d663bca6ee001$var$__decorate([
+    $f3Ts0$property({
         attribute: false,
         hasChanged (containers) {
             return Array.isArray(containers) && containers.every((c)=>c instanceof HTMLElement
             );
         }
     })
-], $b03e17997ed23475$export$f40fc8d0c925c16f.prototype, "containers", void 0);
-window.customElements.define("viskit-reorder-list", $b03e17997ed23475$export$f40fc8d0c925c16f);
+], $113d663bca6ee001$export$f40fc8d0c925c16f.prototype, "containers", void 0);
+window.customElements.define("viskit-reorder-list", $113d663bca6ee001$export$f40fc8d0c925c16f);
 
 
-//# sourceMappingURL=index.js.map
+export {$113d663bca6ee001$export$f40fc8d0c925c16f as ReorderList, $113d663bca6ee001$exports as default};
+//# sourceMappingURL=module.js.map
